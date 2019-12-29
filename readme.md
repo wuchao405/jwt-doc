@@ -25,4 +25,20 @@ jwt是`JSON Web Token`的缩写，这是一种无状态的用户识别和数据�
 其实就是客户端数据。但是这种客户端数据是安全权的，用户无法篡改，因为它使用了签名和加密方式
 ![stateless_session-无状态session](./imges/stateless_session.png)
 
-# 四.jwt安全性考虑
+# 四.常见网站恶意攻击的方式
+对jwt攻击常见的常见方式就是移除签名，一个签名的jwt由三部分构成：头部（header）、负载（payload）和签名。有些jwt的验证库会将未签名的token视为有效，这种情况下容易被恶意用户截取并获取到复杂数据（payload）。
+![剥离签名的过程](../jwt-doc/imges/jwt_secure.png)
+### 4.1 跨域站点请求伪造（CSRF）
+跨域站点请求伪造（Cross-site Request Forgery）,一般会采用`<img>`标签的`src`属性向目标网站发起恶意代码，然后获取用户的cookie信息进行篡改，等用户再次访问正常网站时，将修改后的cookie信息发送给正常服务器。
+![跨域站点请求伪造](./imges/2.1.1-csrf.png)
+### 4.2 XSS攻击
+XSS（Cross-Site Script）是一种向授信网站注入跨域js脚本的攻击方式。如果不设置token的过期时间，恶意用户就能访问一些受保护的资源。常见的css攻击就是sql注入。
+![xss攻击](../jwt-doc/imges/2.2.1_xss_attack.png)
+
+# 五.jwt联合认证
+联合认证系统允许不同的设置无关的服务通过中央认证和授权系统来识别用户，有两种常见的解决方案：SAML和OpenId Connect。如果这两种方式你都不想用，可以考虑使用jwt。
+![用户授权和认证流程](../jwt-doc/imges/2.3-authorization.png)
+- 1.用户尝试访问服务器资源
+- 2.服务器发现用户没有访问凭证，重定向到授权服务器提供的登录页。
+- 3.用户输入账号密码登陆
+- 4.用户登陆成功，重定向到授权服务，
