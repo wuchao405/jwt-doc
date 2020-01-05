@@ -23,17 +23,17 @@ jwt是`JSON Web Token`的缩写，这是一种无状态的用户识别和数据�
 
 # 3.2.什么是无状态session
 其实就是客户端数据。但是这种客户端数据是安全权的，用户无法篡改，因为它使用了签名和加密方式
-![stateless_session-无状态session](./imges/stateless_session.png)
+![stateless_session-无状态session](./images/stateless_session.png)
 
 # 四.常见网站恶意攻击的方式
 对jwt攻击常见的常见方式就是移除签名，一个签名的jwt由三部分构成：头部（header）、负载（payload）和签名。有些jwt的验证库会将未签名的token视为有效，这种情况下容易被恶意用户截取并获取到复杂数据（payload）。
-![剥离签名的过程](./jwt-doc/imges/jwt_secure.png)
+![剥离签名的过程](./images/jwt_secure.png)
 ### 4.1 跨域站点请求伪造（CSRF）
 跨域站点请求伪造（Cross-site Request Forgery）,一般会采用`<img>`标签的`src`属性向目标网站发起恶意代码，然后获取用户的cookie信息进行篡改，等用户再次访问正常网站时，将修改后的cookie信息发送给正常服务器。
-![跨域站点请求伪造](./imges/2.1.1-csrf.png)
+![跨域站点请求伪造](./images/2.1.1-csrf.png)
 ### 4.2 XSS攻击
 XSS（Cross-Site Script）是一种向授信网站注入跨域js脚本的攻击方式。如果不设置token的过期时间，恶意用户就能访问一些受保护的资源。常见的css攻击就是sql注入。
-![xss攻击](./jwt-doc/imges/2.2.1_xss_attack.png)
+![xss攻击](./images/2.2.1_xss_attack.png)
 
 ### 4.3jwt联合认证
 联合认证系统允许不同的设置无关的服务通过中央认证和授权系统来识别用户，有两种常见的解决方案：SAML和OpenId Connect。如果这两种方式你都不想用，可以考虑使用jwt，流程如下：
@@ -43,7 +43,7 @@ XSS（Cross-Site Script）是一种向授信网站注入跨域js脚本的攻击�
 - 4.用户登陆成功，重定向到授权服务，授权服务使用凭证方提供的凭证访问服务器资源。
 - 5.授权服务器重定向到资源服务器，现在万事大吉，资源服务器有了正确访问凭证。
 - 6.用户成功访问资源。
-![用户授权和认证流程](../jwt-doc/imges/2.3-authorization.png)
+![用户授权和认证流程](./images/2.3-authorization.png)
 上述流程出现了很多重定向，重定向会将数据嵌入到url中，因此这些过程的数据安全变得极其重要。下面jwt登场了，将所有数据使用jwt编码，这样授权服务器就可以给用户提供统一的接口和数据了。
 
 # 五.jwt内部字段详解
@@ -68,4 +68,25 @@ payload字段声明分为私有声明（private claim）和公有声明（public
 - 7.jti: JWT ID （唯一id）
 
 ### 5.3 不安全的jwt
+[源代码-将字符串格式化为jwt形式](./src/unsecuredJwt/decode.js)
+
+[源代码-解析不安全的jwt](./src/unsecuredJwt/decode.js)
+这里所说的不安全是指既没有签名也没有加密的jwt。一个不安全的jwt按照如下步骤创建
+- 1.将header转为utf-8格式的byte数组（encode之前没有必要去除空行，也没必要压缩成一行）
+- 2.使用base64算法encode，并将`=`去掉
+- 3.将`payload`转为byte数组。原则同步骤1
+- 4.将`payload`encode,去等号(同步骤2)
+- 5.使用`.`拼接起来
+![不安全的jwt生成流程](./images/3.1——unsecure_jwt.png)
+
+# 6.jwt签名
+### 6.1签名结构
+签名用于第三方验证，可以验证的jwt-token叫做有效token（validation token）。但是，并不是说延签通过的token都是有效的，例如,`exp`指定的过期时间到期的话，token仍然无效。因此，签名仅仅是允许第三方加强jwt的可靠性而已。
+
+一个签名后的jwt包含3部分，header、payload和signature。签名使用一定的算法，常见的算法有`HS256`、`RS256`、`ES256`。不管用什么签名，目的只有一个，就是保证jwt携带的数据的可靠性。生产带签名的jwt的流程如下:
+![jwt签名流程](./images/4.1_signature_flow.png)
+
+
+
+
 
